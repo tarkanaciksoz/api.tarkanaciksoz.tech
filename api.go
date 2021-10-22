@@ -72,6 +72,9 @@ func home(w http.ResponseWriter, r *http.Request) {
 	response := setAndGetResponse(true, "başarılıydı", respon, 200).([]byte)
 
 	fmt.Fprint(globalRequest.getWriter(), string(response))
+	w = nil
+	r = nil
+	globalRequest = Request{}
 }
 
 func getUser(w http.ResponseWriter, r *http.Request) {
@@ -101,6 +104,7 @@ func getUser(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(globalRequest.getWriter(), string(response))
 	w = nil
 	r = nil
+	globalRequest = Request{}
 }
 
 func (r Request) getWriter() http.ResponseWriter {
