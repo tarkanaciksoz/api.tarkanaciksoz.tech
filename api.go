@@ -99,6 +99,8 @@ func getUser(w http.ResponseWriter, r *http.Request) {
 	response := setAndGetResponse(true, "Başarılı.", cData, 200).([]byte)
 
 	fmt.Fprint(globalRequest.getWriter(), string(response))
+	w = nil
+	r = nil
 }
 
 func (r Request) getWriter() http.ResponseWriter {
