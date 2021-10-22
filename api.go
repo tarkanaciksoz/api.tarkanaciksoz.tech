@@ -33,13 +33,12 @@ type Response struct {
 }
 
 var (
-	token          string
-	globalRequest  Request
-	globalResponse Response
-	blank          interface{}
-	summonerUrl    string
-	requestData    interface{}
-	apiKey         string
+	//globalRequest  Request
+	//globalResponse Response
+	blank       interface{}
+	summonerUrl string
+	requestData interface{}
+	apiKey      string
 )
 
 func construct(w http.ResponseWriter, r *http.Request) bool {
@@ -48,7 +47,7 @@ func construct(w http.ResponseWriter, r *http.Request) bool {
 	//globalRequest = Request{writer: w, request: r}
 	w.Header().Set("Content-type", "application/json")
 
-	token = r.Header.Get("token")
+	token := r.Header.Get("token")
 	if dbToken, errResp := checkToken(token); errResp != nil && errResp != blank && len(dbToken) <= 0 {
 		fmt.Fprint(w, string(errResp.([]byte)))
 		return false
@@ -117,7 +116,7 @@ func (r Response) getResponse() Response {
 
 func setAndGetResponse(success bool, message string, data interface{}, code int) interface{} {
 	var response interface{}
-	globalResponse = Response{Success: success, Message: message, Data: data, Code: code}
+	globalResponse := Response{Success: success, Message: message, Data: data, Code: code}
 
 	successResponse, err := json.Marshal(globalResponse)
 	fatalResponse := errorResponse(err)
