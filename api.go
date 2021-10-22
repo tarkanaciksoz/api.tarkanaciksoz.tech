@@ -75,7 +75,6 @@ func home(w http.ResponseWriter, r *http.Request) {
 	w = nil
 	r = nil
 	globalRequest = Request{}
-	return
 }
 
 func getUser(w http.ResponseWriter, r *http.Request) {
@@ -92,25 +91,25 @@ func getUser(w http.ResponseWriter, r *http.Request) {
 	json.Unmarshal(requestBody, &requestData)
 	data := requestData.(map[string]interface{})
 
-	if data != nil && ((data["server"] != "" || data["server"] != nil ) || (data["userName"] != "" || data["userName"] != nil )) {
-		server := data["server"].(string)
-		userName := data["userName"].(string)
-		url := getSummonerProfileUrl(server, userName)
-
-		cRequest, _ := http.NewRequest("GET", url, nil)
-		cData := getCurlData(cRequest)
-
-		response := setAndGetResponse(true, "Başarılı.", cData, 200).([]byte)
-
+	if data == nil && (data["server"] == "" || data["server"] == nil ) || (data["userName"] == "" || data["server"] == nil ) {
+		response := setAndGetResponse(false, "Required values haven't given.", nil, http.StatusBadRequest).([]byte)
 		fmt.Fprint(globalRequest.getWriter(), string(response))
-		w = nil
-		r = nil
-		globalRequest = Request{}
 		return
 	}
-	response := setAndGetResponse(false, "Required values haven't given.", nil, http.StatusBadRequest).([]byte)
+
+	server := data["server"].(string)
+	userName := data["userName"].(string)
+	url := getSummonerProfileUrl(server, userName)
+
+	cRequest, _ := http.NewRequest("GET", url, nil)
+	cData := getCurlData(cRequest)
+
+	response := setAndGetResponse(true, "Başarılı.", cData, 200).([]byte)
+
 	fmt.Fprint(globalRequest.getWriter(), string(response))
-	return
+	w = nil
+	r = nil
+	globalRequest = Request{}
 }
 
 func (r Request) getWriter() http.ResponseWriter {
