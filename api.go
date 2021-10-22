@@ -60,6 +60,7 @@ func construct(w http.ResponseWriter, r *http.Request) bool {
 func main() {
 	http.HandleFunc("/", home)
 	http.HandleFunc("/getUser", getUser)
+	http.HandleFunc("/riot.txt", riotTxt)
 	http.ListenAndServe(":3000", nil)
 }
 
@@ -114,6 +115,16 @@ func getUser(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
+func riotTxt() {
+	dat, err := os.ReadFile("./riot.txt")
+	if errResp := errorResponse(err); errResp != blank {
+		fmt.Fprint(globalRequest.getWriter(), string(errResp.([]byte)))
+		return
+	}
+	fmt.Print(string(dat))
+	return
+}
+
 func (r Request) getWriter() http.ResponseWriter {
 	return r.writer
 }
@@ -165,7 +176,7 @@ func checkToken(token string) (dbToken string, errResp interface{}) {
 		if errResp := errorResponse(err); errResp != blank {
 			return "", errResp
 		}
-		
+
 		err = rows.Scan(&dbToken)
 		if err != nil {
 			errResp := notAllowedError()
