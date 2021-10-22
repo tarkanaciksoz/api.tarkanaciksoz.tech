@@ -83,6 +83,11 @@ func getUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	requestBody, _ := ioutil.ReadAll(globalRequest.getRequest().Body)
+	if len(requestBody) <= 0 {
+		response := setAndGetResponse(false, "Body is empty.", nil, http.StatusBadRequest).([]byte)
+		fmt.Fprint(globalRequest.getWriter(), string(response))
+		return
+	}
 	json.Unmarshal(requestBody, &requestData)
 	data := requestData.(map[string]interface{})
 
