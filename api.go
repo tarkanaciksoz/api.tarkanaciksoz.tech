@@ -146,11 +146,13 @@ func checkToken(token string) (dbToken string, errResp interface{}) {
 		if errResp := errorResponse(err); errResp != blank {
 			return "", errResp
 		}
+
 		queryString := "SELECT token FROM settings WHERE token = ? LIMIT 1"
 		rows := db.QueryRow(queryString, token)
 		if errResp := errorResponse(err); errResp != blank {
 			return "", errResp
 		}
+		
 		err = rows.Scan(&dbToken)
 		if err != nil {
 			errResp := notAllowedError()
