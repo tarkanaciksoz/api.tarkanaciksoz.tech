@@ -144,6 +144,7 @@ func checkToken(token string) (dbToken string, errResp interface{}) {
 	if len(token) > 0 {
 		db, err := sqlx.Connect("mysql", getDbCredentials())
 		if errResp := errorResponse(err); errResp != blank {
+			os.Exit(4)
 			return "", errResp
 		}
 
@@ -152,7 +153,7 @@ func checkToken(token string) (dbToken string, errResp interface{}) {
 		if errResp := errorResponse(err); errResp != blank {
 			return "", errResp
 		}
-		
+
 		err = rows.Scan(&dbToken)
 		if err != nil {
 			errResp := notAllowedError()
