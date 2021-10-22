@@ -75,6 +75,7 @@ func home(w http.ResponseWriter, r *http.Request) {
 	w = nil
 	r = nil
 	globalRequest = Request{}
+	return
 }
 
 func getUser(w http.ResponseWriter, r *http.Request) {
@@ -110,6 +111,7 @@ func getUser(w http.ResponseWriter, r *http.Request) {
 	w = nil
 	r = nil
 	globalRequest = Request{}
+	return
 }
 
 func (r Request) getWriter() http.ResponseWriter {
