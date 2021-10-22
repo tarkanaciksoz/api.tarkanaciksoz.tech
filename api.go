@@ -92,7 +92,7 @@ func getUser(w http.ResponseWriter, r *http.Request) {
 	json.Unmarshal(requestBody, &requestData)
 	data := requestData.(map[string]interface{})
 
-	if data != nil && data["server"] != "" || data["userName"] != "" {
+	if data != nil && (data["server"] != "" || data["server"] != nil ) || (data["userName"] != "" || data["userName"] != nil ) {
 		server := data["server"].(string)
 		userName := data["userName"].(string)
 		url := getSummonerProfileUrl(server, userName)
