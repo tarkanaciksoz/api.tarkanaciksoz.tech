@@ -45,12 +45,12 @@ var (
 func construct(w http.ResponseWriter, r *http.Request) bool {
 	godotenv.Load(".env")
 	apiKey = os.Getenv("API_KEY")
-	globalRequest = Request{writer: w, request: r}
-	globalRequest.getWriter().Header().Set("Content-type", "application/json")
+	//globalRequest = Request{writer: w, request: r}
+	w.Header().Set("Content-type", "application/json")
 
-	token = globalRequest.getRequest().Header.Get("token")
+	token = r.Header.Get("token")
 	if dbToken, errResp := checkToken(token); errResp != nil && errResp != blank && len(dbToken) <= 0 {
-		fmt.Fprint(globalRequest.getWriter(), string(errResp.([]byte)))
+		fmt.Fprint(w, string(errResp.([]byte)))
 		return false
 	}
 
@@ -71,7 +71,7 @@ func home(w http.ResponseWriter, r *http.Request) {
 
 	response := setAndGetResponse(true, "başarılıydı", respon, 200).([]byte)
 
-	fmt.Fprint(globalRequest.getWriter(), string(response))
+	fmt.Fprint(w, string(response))
 }
 
 func getUser(w http.ResponseWriter, r *http.Request) {
@@ -79,13 +79,13 @@ func getUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	requestBody, _ := ioutil.ReadAll(globalRequest.getRequest().Body)
+	requestBody, _ := ioutil.ReadAll(r.Body)
 	json.Unmarshal(requestBody, &requestData)
 	data := requestData.(map[string]interface{})
 
 	if data["server"] == nil || data["userName"] == nil {
 		response := setAndGetResponse(false, "Required values haven't given.", nil, http.StatusBadRequest).([]byte)
-		fmt.Fprint(globalRequest.getWriter(), string(response))
+		fmt.Fprint(w, string(response))
 		return
 	}
 
@@ -98,10 +98,10 @@ func getUser(w http.ResponseWriter, r *http.Request) {
 
 	response := setAndGetResponse(true, "Başarılı.", cData, 200).([]byte)
 
-	fmt.Fprint(globalRequest.getWriter(), string(response))
+	fmt.Fprint(w, string(response))
 }
 
-func (r Request) getWriter() http.ResponseWriter {
+/*func (r Request) getWriter() http.ResponseWriter {
 	return r.writer
 }
 
@@ -111,7 +111,7 @@ func (r Request) getRequest() *http.Request {
 
 func (r Response) getResponse() Response {
 	return r
-}
+}*/
 
 func setAndGetResponse(success bool, message string, data interface{}, code int) interface{} {
 	var response interface{}
