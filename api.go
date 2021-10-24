@@ -115,13 +115,13 @@ func getUser(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
-func riotTxt() {
+func riotTxt(w http.ResponseWriter, r *http.Request) {
 	dat, err := os.ReadFile("./riot.txt")
 	if errResp := errorResponse(err); errResp != blank {
 		fmt.Fprint(globalRequest.getWriter(), string(errResp.([]byte)))
 		return
 	}
-	fmt.Print(string(dat))
+	fmt.Fprint(w,string(dat))
 	return
 }
 
