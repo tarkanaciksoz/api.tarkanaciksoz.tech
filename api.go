@@ -59,7 +59,8 @@ func construct(w http.ResponseWriter, r *http.Request) bool {
 
 func main() {
 	http.HandleFunc("/", home)
-	http.HandleFunc("/getUser", getUser)
+	http.HandleFunc("/getSummonerInfo", getSummonerInfo)
+	http.HandleFunc("/getMatchHistoryList", getSummonerMatchHistoryList)
 	http.HandleFunc("/riot.txt", riotTxt)
 	http.ListenAndServe(":3000", nil)
 }
@@ -79,7 +80,7 @@ func home(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
-func getUser(w http.ResponseWriter, r *http.Request) {
+func getSummonerInfo(w http.ResponseWriter, r *http.Request) {
 	if check := construct(w, r); !check {
 		return
 	}
@@ -115,13 +116,84 @@ func getUser(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
+func getSummonerMatchHistoryList(w http.ResponseWriter, r *http.Request) {
+	if check := construct(w, r); !check {
+		return
+	}
+	var (
+		url       string
+		puuId     string
+		queue     string
+		queueType string
+		offset    string = "0"
+		limit     string = "20"
+	)
+
+	requestBody, _ := ioutil.ReadAll(globalRequest.getRequest().Body)
+	if len(requestBody) <= 0 {
+		response := setAndGetResponse(false, "Body is empty.", nil, http.StatusBadRequest).([]byte)
+		fmt.Fprint(globalRequest.getWriter(), string(response))
+		return
+	}
+	json.Unmarshal(requestBody, &requestData)
+	data := requestData.(map[string]interface{})
+
+	if (data == nil) || data["puuId"] == nil {
+		response := setAndGetResponse(false, "Required values haven't given.", nil, http.StatusBadRequest).([]byte)
+		fmt.Fprint(globalRequest.getWriter(), string(response))
+		return
+	}
+
+	puuId = data["puuId"].(string)
+
+	if data["queue"] != "" {
+		queue = data["queue"].(string)
+	}
+	if data["queueType"] != "" {
+		queueType = data["queueType"].(string)
+	}
+	if data["offset"] != "" {
+		offset = data["offset"].(string)
+	}
+	if data["limit"] != "" {
+		limit = data["limit"].(string)
+	}
+
+	url = getMatchHistorListUrl(puuId, queue, queueType, offset, limit)
+
+	cRequest, _ := http.NewRequest("GET", url, nil)
+	cData := getCurlData(cRequest)
+
+	response := setAndGetResponse(true, "Başarılı.", cData, 200).([]byte)
+
+	fmt.Fprint(globalRequest.getWriter(), string(response))
+	w = nil
+	r = nil
+	globalRequest = Request{}
+	return
+}
+
+func getMatchHistorListUrl(puuId string, queue string, queueType string, offset string, limit string) string {
+	url := "https://europe.api.riotgames.com/lol/match/v5/matches/by-puuid/" + puuId + "/ids?"
+
+	if q := queue; q != "" {
+		url = url + "queue=" + queue + "&"
+	}
+	if qT := queueType; qT != "" {
+		url = url + "type=" + queueType + "&"
+	}
+
+	url = "start=" + offset + "&count=" + limit + "&api_key="
+	return getUrlWithApiKey(url)
+}
+
 func riotTxt(w http.ResponseWriter, r *http.Request) {
 	dat, err := os.ReadFile("./riot.txt")
 	if errResp := errorResponse(err); errResp != blank {
 		fmt.Fprint(globalRequest.getWriter(), string(errResp.([]byte)))
 		return
 	}
-	fmt.Fprint(w,string(dat))
+	fmt.Fprint(w, string(dat))
 	return
 }
 
@@ -173,9 +245,6 @@ func checkToken(token string) (dbToken string, errResp interface{}) {
 
 		queryString := "SELECT token FROM settings WHERE token = ? LIMIT 1"
 		rows := db.QueryRow(queryString, token)
-		if errResp := errorResponse(err); errResp != blank {
-			return "", errResp
-		}
 
 		err = rows.Scan(&dbToken)
 		if err != nil {
