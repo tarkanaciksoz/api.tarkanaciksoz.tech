@@ -181,16 +181,16 @@ func getSummonerMatchHistoryList(w http.ResponseWriter, r *http.Request) {
 }
 
 func getMatchHistorListUrl(puuId string, queue string, queueType string, offset string, limit string) string {
-	url := "https://europe.api.riotgames.com/lol/match/v5/matches/by-puuid/" + puuId + "/ids?"
+	var url string = "https://europe.api.riotgames.com/lol/match/v5/matches/by-puuid/" + puuId + "/ids?"
 
 	if q := queue; q != "" {
-		url = url + "queue=" + queue + "&"
+		url += "queue=" + queue + "&"
 	}
 	if qT := queueType; qT != "" {
-		url = url + "type=" + queueType + "&"
+		url += "type=" + queueType + "&"
 	}
 
-	url = "start=" + offset + "&count=" + limit + "&api_key="
+	url += "start=" + offset + "&count=" + limit + "&api_key="
 	return getUrlWithApiKey(url)
 }
 
