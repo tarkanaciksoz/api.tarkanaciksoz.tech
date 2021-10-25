@@ -182,7 +182,7 @@ func getSummonerMatchHistoryList(w http.ResponseWriter, r *http.Request) {
 
 	url = getMatchHistorListUrl(puuId, queue, queueType, offset, limit)
 
-	cRequest, err := http.NewRequest("GET", url, nil)
+	/*cRequest, err := http.NewRequest("GET", url, nil)
 	if errResponse := errorResponse(err); errResponse != blank {
 		fmt.Fprint(globalRequest.getWriter(), string(errResponse.([]byte)))
 		w = nil
@@ -190,9 +190,9 @@ func getSummonerMatchHistoryList(w http.ResponseWriter, r *http.Request) {
 		globalRequest = Request{}
 		return
 	}
-	cData := getCurlData(cRequest)
+	cData := getCurlData(cRequest)*/
 
-	response := setAndGetResponse(true, "Başarılı.", cData, 200).([]byte)
+	response := setAndGetResponse(true, "Başarılı.", url, 200).([]byte)
 
 	fmt.Fprint(globalRequest.getWriter(), string(response))
 	w = nil
