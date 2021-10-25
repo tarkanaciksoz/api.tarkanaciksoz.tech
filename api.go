@@ -173,10 +173,10 @@ func getSummonerMatchHistoryList(w http.ResponseWriter, r *http.Request) {
 	if data["queueType"] != nil && len(data["queueType"].(string)) > 0 {
 		queueType = data["queueType"].(string)
 	}
-	if data["offset"] != nil && len(data["queueType"].(string)) > 0 {
+	if data["offset"] != nil && len(data["offset"].(string)) > 0 {
 		offset = data["offset"].(string)
 	}
-	if data["limit"] != nil && len(data["queueType"].(string)) > 0 {
+	if data["limit"] != nil && len(data["limit"].(string)) > 0 {
 		limit = data["limit"].(string)
 	}
 
