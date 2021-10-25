@@ -167,16 +167,16 @@ func getSummonerMatchHistoryList(w http.ResponseWriter, r *http.Request) {
 
 	puuId = data["puuId"].(string)
 
-	if data["queue"] != nil && data["queue"].(string) != "" {
+	if data["queue"] != nil && len(data["queue"].(string)) > 0 {
 		queue = data["queue"].(string)
 	}
-	if data["queueType"] != nil && data["queueType"].(string) != "" {
+	if data["queueType"] != nil && len(data["queueType"].(string)) > 0 {
 		queueType = data["queueType"].(string)
 	}
-	if data["offset"] != nil && data["queueType"].(string) != "" {
+	if data["offset"] != nil && len(data["queueType"].(string)) > 0 {
 		offset = data["offset"].(string)
 	}
-	if data["limit"] != nil && data["queueType"].(string) != "" {
+	if data["limit"] != nil && len(data["queueType"].(string)) > 0 {
 		limit = data["limit"].(string)
 	}
 
