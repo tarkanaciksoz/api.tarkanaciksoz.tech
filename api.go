@@ -94,7 +94,7 @@ func getSummonerInfo(w http.ResponseWriter, r *http.Request) {
 	json.Unmarshal(requestBody, &requestData)
 	data := requestData.(map[string]interface{})
 
-	if (data == nil) || data["server"] == "" || data["userName"] == "" {
+	if (data == nil) || data["server"] == nil || data["userName"] == nil {
 		response := setAndGetResponse(false, "Required values haven't given.", nil, http.StatusBadRequest).([]byte)
 		fmt.Fprint(globalRequest.getWriter(), string(response))
 		return
@@ -138,7 +138,7 @@ func getSummonerMatchHistoryList(w http.ResponseWriter, r *http.Request) {
 	json.Unmarshal(requestBody, &requestData)
 	data := requestData.(map[string]interface{})
 
-	if (data == nil) || data["puuId"] == "" {
+	if (data == nil) || data["puuId"] == nil {
 		response := setAndGetResponse(false, "Required values haven't given.", nil, http.StatusBadRequest).([]byte)
 		fmt.Fprint(globalRequest.getWriter(), string(response))
 		return
