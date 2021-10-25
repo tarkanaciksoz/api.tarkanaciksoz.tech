@@ -60,6 +60,7 @@ func construct(w http.ResponseWriter, r *http.Request) bool {
 func main() {
 	http.HandleFunc("/", home)
 	http.HandleFunc("/getSummonerInfo", getSummonerInfo)
+	http.HandleFunc("/getMatchHistoryList", getSummonerMatchHistoryList)
 	http.HandleFunc("/riot.txt", riotTxt)
 	http.ListenAndServe(":3000", nil)
 }
