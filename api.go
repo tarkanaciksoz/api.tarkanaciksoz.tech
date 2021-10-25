@@ -67,6 +67,9 @@ func main() {
 
 func home(w http.ResponseWriter, r *http.Request) {
 	if check := construct(w, r); !check {
+		w = nil
+		r = nil
+		globalRequest = Request{}
 		return
 	}
 	var respon interface{}
@@ -82,6 +85,9 @@ func home(w http.ResponseWriter, r *http.Request) {
 
 func getSummonerInfo(w http.ResponseWriter, r *http.Request) {
 	if check := construct(w, r); !check {
+		w = nil
+		r = nil
+		globalRequest = Request{}
 		return
 	}
 
@@ -89,6 +95,9 @@ func getSummonerInfo(w http.ResponseWriter, r *http.Request) {
 	if len(requestBody) <= 0 {
 		response := setAndGetResponse(false, "Body is empty.", nil, http.StatusBadRequest).([]byte)
 		fmt.Fprint(globalRequest.getWriter(), string(response))
+		w = nil
+		r = nil
+		globalRequest = Request{}
 		return
 	}
 	json.Unmarshal(requestBody, &requestData)
@@ -97,6 +106,9 @@ func getSummonerInfo(w http.ResponseWriter, r *http.Request) {
 	if (data == nil) || data["server"] == nil || data["userName"] == nil {
 		response := setAndGetResponse(false, "Required values haven't given.", nil, http.StatusBadRequest).([]byte)
 		fmt.Fprint(globalRequest.getWriter(), string(response))
+		w = nil
+		r = nil
+		globalRequest = Request{}
 		return
 	}
 
@@ -118,6 +130,9 @@ func getSummonerInfo(w http.ResponseWriter, r *http.Request) {
 
 func getSummonerMatchHistoryList(w http.ResponseWriter, r *http.Request) {
 	if check := construct(w, r); !check {
+		w = nil
+		r = nil
+		globalRequest = Request{}
 		return
 	}
 	var (
@@ -133,6 +148,9 @@ func getSummonerMatchHistoryList(w http.ResponseWriter, r *http.Request) {
 	if len(requestBody) <= 0 {
 		response := setAndGetResponse(false, "Body is empty.", nil, http.StatusBadRequest).([]byte)
 		fmt.Fprint(globalRequest.getWriter(), string(response))
+		w = nil
+		r = nil
+		globalRequest = Request{}
 		return
 	}
 	json.Unmarshal(requestBody, &requestData)
@@ -141,6 +159,9 @@ func getSummonerMatchHistoryList(w http.ResponseWriter, r *http.Request) {
 	if (data == nil) || data["puuId"] == nil {
 		response := setAndGetResponse(false, "Required values haven't given.", nil, http.StatusBadRequest).([]byte)
 		fmt.Fprint(globalRequest.getWriter(), string(response))
+		w = nil
+		r = nil
+		globalRequest = Request{}
 		return
 	}
 
@@ -164,6 +185,9 @@ func getSummonerMatchHistoryList(w http.ResponseWriter, r *http.Request) {
 	cRequest, err := http.NewRequest("GET", url, nil)
 	if errResponse := errorResponse(err); errResponse != blank {
 		fmt.Fprint(globalRequest.getWriter(), string(errResponse.([]byte)))
+		w = nil
+		r = nil
+		globalRequest = Request{}
 		return
 	}
 	cData := getCurlData(cRequest)
@@ -198,6 +222,9 @@ func riotTxt(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	fmt.Fprint(w, string(dat))
+	w = nil
+	r = nil
+	globalRequest = Request{}
 	return
 }
 
