@@ -138,8 +138,8 @@ func getSummonerMatchHistoryList(w http.ResponseWriter, r *http.Request) {
 	var (
 		url       string
 		puuId     string
-		queue     string
-		queueType string
+		queue     string = ""
+		queueType string = ""
 		offset    string = "0"
 		limit     string = "20"
 	)
@@ -167,16 +167,16 @@ func getSummonerMatchHistoryList(w http.ResponseWriter, r *http.Request) {
 
 	puuId = data["puuId"].(string)
 
-	if data["queue"] != "" {
+	if data["queue"] != nil && data["queue"].(string) != "" {
 		queue = data["queue"].(string)
 	}
-	if data["queueType"] != "" {
+	if data["queueType"] != nil && data["queueType"].(string) != "" {
 		queueType = data["queueType"].(string)
 	}
-	if data["offset"] != "" {
+	if data["offset"] != nil && data["queueType"].(string) != "" {
 		offset = data["offset"].(string)
 	}
-	if data["limit"] != "" {
+	if data["limit"] != nil && data["queueType"].(string) != "" {
 		limit = data["limit"].(string)
 	}
 
