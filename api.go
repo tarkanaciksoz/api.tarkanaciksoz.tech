@@ -60,7 +60,8 @@ func construct(w http.ResponseWriter, r *http.Request) bool {
 func main() {
 	http.HandleFunc("/", home)
 	http.HandleFunc("/getSummonerInfo", getSummonerInfo)
-	http.HandleFunc("/getMatchHistoryList", getSummonerMatchHistoryList)
+	http.HandleFunc("/getMatchHistoryList", getMatchHistoryList)
+	http.HandleFunc("/getMatchHistory", getMatchHistory)
 	http.HandleFunc("/riot.txt", riotTxt)
 	http.ListenAndServe(":3000", nil)
 }
@@ -74,7 +75,7 @@ func home(w http.ResponseWriter, r *http.Request) {
 	}
 	var respon interface{}
 
-	response := setAndGetResponse(true, "başarılıydı", respon, 200).([]byte)
+	response := setAndGetResponse(false, "Invalid method.", respon, http.StatusBadRequest).([]byte)
 
 	fmt.Fprint(globalRequest.getWriter(), string(response))
 	w = nil
@@ -128,7 +129,7 @@ func getSummonerInfo(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
-func getSummonerMatchHistoryList(w http.ResponseWriter, r *http.Request) {
+func getMatchHistoryList(w http.ResponseWriter, r *http.Request) {
 	if check := construct(w, r); !check {
 		w = nil
 		r = nil
@@ -141,7 +142,7 @@ func getSummonerMatchHistoryList(w http.ResponseWriter, r *http.Request) {
 		queue     string = ""
 		queueType string = ""
 		offset    string = "0"
-		limit     string = "20"
+		limit     string = "10"
 		cData     interface{}
 	)
 
@@ -202,6 +203,63 @@ func getSummonerMatchHistoryList(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
+func getMatchHistory(w http.ResponseWriter, r *http.Request) {
+	if check := construct(w, r); !check {
+		w = nil
+		r = nil
+		globalRequest = Request{}
+		return
+	}
+
+	requestBody, _ := ioutil.ReadAll(globalRequest.getRequest().Body)
+	if len(requestBody) <= 0 {
+		response := setAndGetResponse(false, "Body is empty.", nil, http.StatusBadRequest).([]byte)
+		fmt.Fprint(globalRequest.getWriter(), string(response))
+		w = nil
+		r = nil
+		globalRequest = Request{}
+		return
+	}
+
+	json.Unmarshal(requestBody, &requestData)
+	data := requestData.(map[string]interface{})
+
+	if (data == nil) || data["idList"] == nil {
+		response := setAndGetResponse(false, "Required values haven't given.", nil, http.StatusBadRequest).([]byte)
+		fmt.Fprint(globalRequest.getWriter(), string(response))
+		w = nil
+		r = nil
+		globalRequest = Request{}
+		return
+	}
+
+	var url string
+	var cData interface{}
+	var matchHistoryArr []interface{}
+	list := data["idList"].([]interface{})
+	for _, matchId := range list {
+		url = getMatchHistoryUrl(matchId.(string))
+		cRequest, err := http.NewRequest("GET", url, nil)
+		if errResponse := errorResponse(err); errResponse != blank {
+			fmt.Fprint(globalRequest.getWriter(), string(errResponse.([]byte)))
+			w = nil
+			r = nil
+			globalRequest = Request{}
+			return
+		}
+		cData = getCurlData(cRequest)
+		matchHistoryArr = append(matchHistoryArr, cData)
+	}
+
+	response := setAndGetResponse(true, "Başarılı.", matchHistoryArr, 200).([]byte)
+
+	fmt.Fprint(globalRequest.getWriter(), string(response))
+	w = nil
+	r = nil
+	globalRequest = Request{}
+	return
+}
+
 func getMatchHistorListUrl(puuId string, queue string, queueType string, offset string, limit string) string {
 	var url string = "https://europe.api.riotgames.com/lol/match/v5/matches/by-puuid/" + puuId + "/ids?"
 
@@ -214,6 +272,10 @@ func getMatchHistorListUrl(puuId string, queue string, queueType string, offset 
 
 	url += "start=" + offset + "&count=" + limit + "&api_key="
 	return getUrlWithApiKey(url)
+}
+
+func getMatchHistoryUrl(matchId string) string {
+	return getUrlWithApiKey("https://europe.api.riotgames.com/lol/match/v5/matches/" + matchId + "?api_key=")
 }
 
 func riotTxt(w http.ResponseWriter, r *http.Request) {
