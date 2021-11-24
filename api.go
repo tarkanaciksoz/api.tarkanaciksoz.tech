@@ -376,9 +376,12 @@ func getCurlData(request *http.Request) interface{} {
 }
 
 func getDbCredentials() string {
+	dbHost := os.Getenv("DB_HOST")
+	dbName := os.Getenv("DB_NAME")
 	dbUser := os.Getenv("DB_USER")
 	dbPass := os.Getenv("DB_PASS")
-	dbName := os.Getenv("DB_NAME")
 
-	return dbUser + ":" + dbPass + "@/" + dbName
+	//println(dbUser + ":" + dbPass + "@tcp(" + dbHost + ")/" + dbName)
+	//db_user:password@tcp(localhost:3306)/my_db
+	return dbUser + ":" + dbPass + "@tcp(" + dbHost + ")/" + dbName
 }
