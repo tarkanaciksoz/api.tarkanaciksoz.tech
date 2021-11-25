@@ -26,6 +26,7 @@ type TokenRow struct {
 	token    string
 	isActive int
 }
+
 type Request struct {
 	writer  http.ResponseWriter
 	request *http.Request
@@ -360,14 +361,14 @@ func checkToken(token string) (errResp interface{}) {
 		if errResp := setTokenExpired(tokenRow.id); errResp != blank {
 			return errResp
 		}
-		
+
 		return blank
 	}
 
 	return tokenResponse("Sorry, not allowed.")
 }
 
-func setTokenExpired(tokenId int) (interface{}){
+func setTokenExpired(tokenId int) interface{} {
 	queryString := "UPDATE settings SET is_active = ? WHERE id = ?"
 	result, err := db.Exec(queryString, 0, tokenId)
 	if errResp := errorResponse(err); errResp != blank {
@@ -380,7 +381,7 @@ func setTokenExpired(tokenId int) (interface{}){
 		}
 		return blank
 	}
- 
+
 	return errorResponse(errors.New("Bir problem meydana geldi."))
 }
 
