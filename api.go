@@ -56,7 +56,7 @@ func construct(w http.ResponseWriter, r *http.Request) bool {
 	globalRequest.getWriter().Header().Set("Content-type", "application/json")
 
 	token = globalRequest.getRequest().Header.Get("token")
-	if errResp := checkToken(token); errResp != nil && errResp != blank {
+	if errResp := checkToken(token); errResp != blank {
 		fmt.Fprint(globalRequest.getWriter(), string(errResp.([]byte)))
 		return false
 	}
@@ -332,21 +332,14 @@ func errorResponse(err error) interface{} {
 	return blank
 }
 
-func notAllowedError(is_active int) interface{} {
-	message := "Sorry, not allowed."
-	if is_active == 0 {
-		message = "Token is Expired."
-	}
-
+func tokenResponse(message string) interface{} {
 	fatalResponse := setAndGetResponse(false, message, nil, http.StatusForbidden)
 	return fatalResponse
 }
 
 func checkToken(token string) (errResp interface{}) {
 	if len(token) > 0 {
-		var err error
-		db, err = sqlx.Connect("mysql", getDbCredentials())
-		if errResp := errorResponse(err); errResp != blank {
+		if db, errResp = setAndGetDb(); errResp != blank {
 			return errResp
 		}
 
@@ -354,19 +347,24 @@ func checkToken(token string) (errResp interface{}) {
 		row := db.QueryRow(queryString, token)
 
 		var tokenRow TokenRow
-		err = row.Scan(&tokenRow.id, &tokenRow.token, &tokenRow.isActive)
-		if err != nil || tokenRow.isActive == 0 {
-			errResp := notAllowedError(tokenRow.isActive)
-			return errResp
+
+		err := row.Scan(&tokenRow.id, &tokenRow.token, &tokenRow.isActive)
+		if errResp = errorResponse(err); errResp != blank {
+			return tokenResponse("Sorry, not allowed.")
 		}
 
-		if result := setTokenExpired(tokenRow.id); result != blank {
-			return result
+		if tokenRow.isActive == 0 {
+			return tokenResponse("Token is expired.")
+		}
+
+		if errResp := setTokenExpired(tokenRow.id); errResp != blank {
+			return errResp
 		}
 		
 		return blank
 	}
-	return notAllowedError(1)
+
+	return tokenResponse("Sorry, not allowed.")
 }
 
 func setTokenExpired(tokenId int) (interface{}){
@@ -417,4 +415,14 @@ func getDbCredentials() string {
 	//println(dbUser + ":" + dbPass + "@tcp(" + dbHost + ")/" + dbName)
 	//db_user:password@tcp(localhost:3306)/my_db
 	return dbUser + ":" + dbPass + "@tcp(" + dbHost + ")/" + dbName
+}
+
+func setAndGetDb() (db *sqlx.DB, errResp interface{}) {
+	var err error
+	db, err = sqlx.Connect("mysql", getDbCredentials())
+	if errResp := errorResponse(err); errResp != blank {
+		return db, errResp
+	}
+
+	return db, errResp
 }
