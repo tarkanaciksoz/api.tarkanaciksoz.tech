@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/joho/godotenv"
@@ -369,8 +370,10 @@ func checkToken(token string) (errResp interface{}) {
 }
 
 func setTokenExpired(tokenId int) interface{} {
-	queryString := "UPDATE settings SET is_active = ? WHERE id = ?"
-	result, err := db.Exec(queryString, 0, tokenId)
+	date := time.Now()
+	dateFormat := fmt.Sprintf("%d-%02d-%02d %02d:%02d:%02d", date.Year(), date.Month(), date.Day(), date.Hour(), date.Minute(), date.Second())
+	queryString := "UPDATE settings SET is_active = ?, date_expired = ? WHERE id = ?"
+	result, err := db.Exec(queryString, 0, dateFormat, tokenId)
 	if errResp := errorResponse(err); errResp != blank {
 		return errResp
 	}
