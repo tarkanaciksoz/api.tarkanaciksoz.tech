@@ -2,15 +2,17 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"os"
+	"time"
 
+	"github.com/jmoiron/sqlx"
 	"github.com/joho/godotenv"
 
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/jmoiron/sqlx"
 	_ "github.com/mattn/go-sqlite3"
 )
 
@@ -18,6 +20,12 @@ type Globals interface {
 	getWriter() http.ResponseWriter
 	getRequest() *http.Request
 	getResponse() Response
+}
+
+type TokenRow struct {
+	id       int
+	token    string
+	isActive int
 }
 
 type Request struct {
@@ -33,6 +41,7 @@ type Response struct {
 }
 
 var (
+	db             *sqlx.DB
 	token          string
 	globalRequest  Request
 	globalResponse Response
@@ -49,7 +58,7 @@ func construct(w http.ResponseWriter, r *http.Request) bool {
 	globalRequest.getWriter().Header().Set("Content-type", "application/json")
 
 	token = globalRequest.getRequest().Header.Get("token")
-	if dbToken, errResp := checkToken(token); errResp != nil && errResp != blank && len(dbToken) <= 0 {
+	if errResp := checkToken(token); errResp != blank {
 		fmt.Fprint(globalRequest.getWriter(), string(errResp.([]byte)))
 		return false
 	}
@@ -325,32 +334,58 @@ func errorResponse(err error) interface{} {
 	return blank
 }
 
-func notAllowedError() interface{} {
-	fatalResponse := setAndGetResponse(false, "Sorry not allowed.", nil, http.StatusForbidden)
+func tokenResponse(message string) interface{} {
+	fatalResponse := setAndGetResponse(false, message, nil, http.StatusForbidden)
 	return fatalResponse
 }
 
-func checkToken(token string) (dbToken string, errResp interface{}) {
+func checkToken(token string) (errResp interface{}) {
 	if len(token) > 0 {
-		db, err := sqlx.Connect("mysql", getDbCredentials())
-		if errResp := errorResponse(err); errResp != blank {
-			return "", errResp
+		if db, errResp = setAndGetDb(); errResp != blank {
+			return errResp
 		}
 
-		queryString := "SELECT token FROM settings WHERE token = ? LIMIT 1"
-		rows := db.QueryRow(queryString, token)
+		queryString := "SELECT id, token, is_active FROM settings WHERE token = ? LIMIT 1"
+		row := db.QueryRow(queryString, token)
 
-		err = rows.Scan(&dbToken)
-		if err != nil {
-			errResp := notAllowedError()
-			return "", errResp
+		var tokenRow TokenRow
+
+		err := row.Scan(&tokenRow.id, &tokenRow.token, &tokenRow.isActive)
+		if errResp = errorResponse(err); errResp != blank {
+			return tokenResponse("Sorry, not allowed.")
 		}
 
-		if len(dbToken) > 0 {
-			return dbToken, blank
+		if tokenRow.isActive == 0 {
+			return tokenResponse("Token is expired.")
 		}
+
+		if errResp := setTokenExpired(tokenRow.id); errResp != blank {
+			return errResp
+		}
+
+		return blank
 	}
-	return "", notAllowedError()
+
+	return tokenResponse("Sorry, not allowed.")
+}
+
+func setTokenExpired(tokenId int) interface{} {
+	date := time.Now()
+	dateFormat := fmt.Sprintf("%d-%02d-%02d %02d:%02d:%02d", date.Year(), date.Month(), date.Day(), date.Hour(), date.Minute(), date.Second())
+	queryString := "UPDATE settings SET is_active = ?, date_expired = ? WHERE id = ?"
+	result, err := db.Exec(queryString, 0, dateFormat, tokenId)
+	if errResp := errorResponse(err); errResp != blank {
+		return errResp
+	}
+
+	if affectedRows, err := result.RowsAffected(); affectedRows > 0 {
+		if errResp := errorResponse(err); errResp != blank {
+			return errResp
+		}
+		return blank
+	}
+
+	return errorResponse(errors.New("Bir problem meydana geldi."))
 }
 
 func getSummonerProfileUrl(server string, userName string) string {
@@ -384,4 +419,14 @@ func getDbCredentials() string {
 	//println(dbUser + ":" + dbPass + "@tcp(" + dbHost + ")/" + dbName)
 	//db_user:password@tcp(localhost:3306)/my_db
 	return dbUser + ":" + dbPass + "@tcp(" + dbHost + ")/" + dbName
+}
+
+func setAndGetDb() (db *sqlx.DB, errResp interface{}) {
+	var err error
+	db, err = sqlx.Connect("mysql", getDbCredentials())
+	if errResp := errorResponse(err); errResp != blank {
+		return db, errResp
+	}
+
+	return db, errResp
 }
