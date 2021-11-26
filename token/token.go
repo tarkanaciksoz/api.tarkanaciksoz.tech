@@ -43,9 +43,9 @@ func CheckToken(token string) (errResp interface{}) {
 			return tokenResponse("Token is expired.")
 		}
 
-		if errResp := setTokenExpired(tokenRow.id); errResp != blank {
+		/*if errResp := setTokenExpired(tokenRow.id); errResp != blank {
 			return errResp
-		}
+		}*/
 
 		return blank
 	}
