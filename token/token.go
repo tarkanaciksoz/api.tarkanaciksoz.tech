@@ -7,7 +7,9 @@ import (
 	"time"
 
 	"api.tarkanaciksoz.tech/helper"
+	_ "github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
+	_ "github.com/mattn/go-sqlite3"
 )
 
 type TokenRow struct {
