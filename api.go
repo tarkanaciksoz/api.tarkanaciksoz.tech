@@ -5,8 +5,8 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	"api.tarkanaciksoz.tech/helper"
-	"api.tarkanaciksoz.tech/token"
+	"loltracking-api/helper"
+	"loltracking-api/token"
 
 	"github.com/joho/godotenv"
 )

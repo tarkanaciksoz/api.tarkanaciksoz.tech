@@ -6,7 +6,8 @@ import (
 	"os"
 	"time"
 
-	"api.tarkanaciksoz.tech/helper"
+	"loltracking-api/helper"
+
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/mattn/go-sqlite3"
