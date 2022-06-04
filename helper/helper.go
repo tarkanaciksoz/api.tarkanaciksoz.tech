@@ -50,6 +50,12 @@ func GetSummonerProfileUrl(server string, userName string) string {
 	return summonerUrl
 }
 
+func GetRankDataUrl(server string, id string) string {
+	rankDataUrl := GetUrlWithApiKey("https://" + server + ".api.riotgames.com/lol/league/v4/entries/by-summoner/" + id + "?api_key=")
+
+	return rankDataUrl
+}
+
 func GetMatchHistoryUrl(matchId string) string {
 	return GetUrlWithApiKey("https://europe.api.riotgames.com/lol/match/v5/matches/" + matchId + "?api_key=")
 }

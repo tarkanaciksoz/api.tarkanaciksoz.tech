@@ -35,6 +35,7 @@ func main() {
 	http.HandleFunc("/getSummonerInfo", getSummonerInfo)
 	http.HandleFunc("/getMatchHistoryList", getMatchHistoryList)
 	http.HandleFunc("/getMatchHistory", getMatchHistory)
+	http.HandleFunc("/getRankData", getRankData)
 	http.ListenAndServe(":3000", nil)
 }
 
@@ -49,6 +50,41 @@ func home(w http.ResponseWriter, r *http.Request) {
 
 	helper.PrintAndCleanRequest(string(response))
 	return
+}
+
+func getRankData(w http.ResponseWriter, r *http.Request) {
+	if errResp := construct(w, r); errResp != blank {
+		helper.PrintAndCleanRequest(string(errResp.([]byte)))
+		return
+	}
+
+	requestBody, _ := ioutil.ReadAll(helper.GlobalRequest.Request.Body)
+	if len(requestBody) <= 0 {
+		response := helper.SetAndGetResponse(false, "Body is empty.", nil, http.StatusBadRequest).([]byte)
+		helper.PrintAndCleanRequest(string(response))
+		return
+	}
+	json.Unmarshal(requestBody, &requestData)
+	data := requestData.(map[string]interface{})
+
+	if (data == nil) || data["server"] == nil || data["id"] == nil {
+		response := helper.SetAndGetResponse(false, "Required values haven't given.", nil, http.StatusBadRequest).([]byte)
+		helper.PrintAndCleanRequest(string(response))
+		return
+	}
+
+	server := data["server"].(string)
+	id := data["id"].(string)
+	url := helper.GetRankDataUrl(server, id)
+
+	cRequest, _ := http.NewRequest("GET", url, nil)
+	cData := helper.GetCurlData(cRequest)
+
+	response := helper.SetAndGetResponse(true, "Başarılı.", cData, 200).([]byte)
+
+	helper.PrintAndCleanRequest(string(response))
+	return
+
 }
 
 func getSummonerInfo(w http.ResponseWriter, r *http.Request) {
