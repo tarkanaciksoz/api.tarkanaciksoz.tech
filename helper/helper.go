@@ -52,7 +52,7 @@ func GetSummonerProfileUrl(server string, userName string) string {
 
 func GetRankDataUrl(server string, id string) string {
 	rankDataUrl := GetUrlWithApiKey("https://" + server + ".api.riotgames.com/lol/league/v4/entries/by-summoner/" + id + "?api_key=")
-	//https://tr1.api.riotgames.com/lol/league/v4/entries/by-summoner/ENTOYZ3ey3dsUjrH5IIIrvZZoO_-AaJePixYkCwaO9sQ8j8?api_key=RGAPI-e66a9d8f-9fa5-41d9-98cc-a135568d95e0
+
 	return rankDataUrl
 }
 
