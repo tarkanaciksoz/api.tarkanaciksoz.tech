@@ -78,7 +78,11 @@ func getRankData(w http.ResponseWriter, r *http.Request) {
 	url := helper.GetRankDataUrl(server, id)
 
 	cRequest, _ := http.NewRequest("GET", url, nil)
-	cData := helper.GetCurlData(cRequest)
+	cData, fatalResponse := helper.GetCurlData(cRequest)
+	if fatalResponse != blank {
+		helper.PrintAndCleanRequest(string(fatalResponse.([]byte)))
+		return
+	}
 
 	response := helper.SetAndGetResponse(true, "Başarılı.", cData, 200).([]byte)
 
@@ -113,7 +117,11 @@ func getSummonerInfo(w http.ResponseWriter, r *http.Request) {
 	url := helper.GetSummonerProfileUrl(server, userName)
 
 	cRequest, _ := http.NewRequest("GET", url, nil)
-	cData := helper.GetCurlData(cRequest)
+	cData, fatalResponse := helper.GetCurlData(cRequest)
+	if fatalResponse != blank {
+		helper.PrintAndCleanRequest(string(fatalResponse.([]byte)))
+		return
+	}
 
 	response := helper.SetAndGetResponse(true, "Başarılı.", cData, 200).([]byte)
 
@@ -174,7 +182,11 @@ func getMatchHistoryList(w http.ResponseWriter, r *http.Request) {
 		helper.PrintAndCleanRequest(string(errResponse.([]byte)))
 		return
 	}
-	cData = helper.GetCurlData(cRequest)
+	cData, fatalResponse := helper.GetCurlData(cRequest)
+	if fatalResponse != blank {
+		helper.PrintAndCleanRequest(string(fatalResponse.([]byte)))
+		return
+	}
 
 	response := helper.SetAndGetResponse(true, "Başarılı.", cData, 200).([]byte)
 
@@ -205,7 +217,6 @@ func getMatchHistory(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var url string
-	var cData interface{}
 	var matchHistoryArr []interface{}
 	list := data["idList"].([]interface{})
 	for _, matchId := range list {
@@ -215,7 +226,12 @@ func getMatchHistory(w http.ResponseWriter, r *http.Request) {
 			helper.PrintAndCleanRequest(string(errResponse.([]byte)))
 			return
 		}
-		cData = helper.GetCurlData(cRequest)
+		cData, fatalResponse := helper.GetCurlData(cRequest)
+		if fatalResponse != blank {
+			helper.PrintAndCleanRequest(string(fatalResponse.([]byte)))
+			return
+		}
+
 		matchHistoryArr = append(matchHistoryArr, cData)
 	}
 

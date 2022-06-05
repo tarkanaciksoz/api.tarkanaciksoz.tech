@@ -28,16 +28,19 @@ var (
 	GlobalRequest  Request
 )
 
-func GetCurlData(request *http.Request) interface{} {
+func GetCurlData(request *http.Request) (interface{}, interface{}) {
 	var data interface{}
-	response, _ := http.DefaultClient.Do(request)
+	response, err := http.DefaultClient.Do(request)
+	if errResponse := ErrorResponse(err); errResponse != blank {
+		return nil, errResponse
+	}
 
 	defer response.Body.Close()
 	body, _ := ioutil.ReadAll(response.Body)
 
 	json.Unmarshal(body, &data)
 
-	return data
+	return data, blank
 }
 
 func GetUrlWithApiKey(url string) string {
